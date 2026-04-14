@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conversor de Monedas</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 16px;
+    }
+
+    .contenedor {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      font-size: 30px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .subtitulo {
+      text-align: center;
+      color: rgba(255,255,255,0.4);
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+
+    .campo {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      color: rgba(255,255,255,0.5);
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      color: white;
+      font-size: 22px;
+      font-weight: 300;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    input[type="number"]:focus { border-color: #5282ff; }
+    input[type="number"]::placeholder { color: rgba(255,255,255,0.2); }
+
+    select {
+      width: 100%;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      outline: none;
+      cursor: pointer;
+      transition: border 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+    }
+
+    select:focus { border-color: #5282ff; }
+    select option { background: #16213e; color: white; }
+
+    .intercambiar {
+      display: flex;
+      justify-content: center;
+      margin: 8px 0;
+    }
+
+    .btn-intercambiar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(82,130,255,0.2);
+      border: 1px solid rgba(82,130,255,0.4);
+      color: #7eb3ff;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-intercambiar:hover {
+      background: rgba(82,130,255,0.4);
+      transform: rotate(180deg);
+    }
+
+    .btn-convertir {
+      width: 100%;
+      padding: 16px;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #5282ff, #3a5bd9);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(82,130,255,0.4);
+    }
+
+    .btn-convertir:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(82,130,255,0.5); }
+    .btn-convertir:active { transform: translateY(0); }
+    .btn-convertir:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .resultado {
+      margin-top: 24px;
+      padding: 20px;
+      background: rgba(82,130,255,0.1);
+      border: 1px solid rgba(82,130,255,0.3);
+      border-radius: 14px;
+      text-align: center;
+      display: none;
+    }
+
+    .resultado.visible { display: block; animation: aparecer 0.3s ease; }
+
+    @keyframes aparecer {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .resultado-monto {
+      font-size: 36px;
+      font-weight: 300;
+      color: white;
+      margin-bottom: 6px;
+    }
+
+    .resultado-detalle {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .tasa {
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .error {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: rgba(255,80,80,0.1);
+      border: 1px solid rgba(255,80,80,0.3);
+      border-radius: 10px;
+      color: #ff8080;
+      font-size: 14px;
+      text-align: center;
+      display: none;
+    }
+
+    .error.visible { display: block; }
+
+    .cargando {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .favoritos {
+      margin-top: 20px;
+    }
+
+    .favoritos-titulo {
+      color: rgba(255,255,255,0.3);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      background: rgba(82,130,255,0.2);
+      border-color: rgba(82,130,255,0.4);
+      color: #7eb3ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <h1>💱 Conversor</h1>
+    <p class="subtitulo">Tipos de cambio en tiempo real</p>
+
+    <div class="card">
+      <div class="campo">
+        <label>Cantidad</label>
+        <input type="number" id="cantidad" placeholder="1" value="1" min="0" />
+      </div>
+
+      <div class="campo">
+        <label>De</label>
+        <select id="moneda-origen"></select>
+      </div>
+
+      <div class="intercambiar">
+        <button class="btn-intercambiar" onclick="intercambiar()" title="Intercambiar monedas">⇅</button>
+      </div>
+
+      <div class="campo">
+        <label>A</label>
+        <select id="moneda-destino"></select>
+      </div>
+
+      <button class="btn-convertir" id="btn-convertir" onclick="convertir()">
+        CONVERTIR
+      </button>
+
+      <div class="resultado" id="resultado">
+        <div class="resultado-monto" id="resultado-monto"></div>
+        <div class="resultado-detalle" id="resultado-detalle"></div>
+        <div class="tasa" id="tasa"></div>
+      </div>
+
+      <div class="error" id="error"></div>
+
+      <div class="favoritos">
+        <div class="favoritos-titulo">Conversiones frecuentes</div>
+        <div class="chips">
+          <div class="chip" onclick="setConversion('USD','MXN')">USD → MXN</div>
+          <div class="chip" onclick="setConversion('EUR','MXN')">EUR → MXN</div>
+          <div class="chip" onclick="setConversion('MXN','USD')">MXN → USD</div>
+          <div class="chip" onclick="setConversion('USD','EUR')">USD → EUR</div>
+          <div class="chip" onclick="setConversion('GBP','MXN')">GBP → MXN</div>
+          <div class="chip" onclick="setConversion('MXN','EUR')">MXN → EUR</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const monedas = {
+      USD: "🇺🇸 Dólar Americano",
+      MXN: "🇲🇽 Peso Mexicano",
+      EUR: "🇪🇺 Euro",
+      GBP: "🇬🇧 Libra Esterlina",
+      CAD: "🇨🇦 Dólar Canadiense",
+      JPY: "🇯🇵 Yen Japonés",
+      CHF: "🇨🇭 Franco Suizo",
+      AUD: "🇦🇺 Dólar Australiano",
+      CNY: "🇨🇳 Yuan Chino",
+      BRL: "🇧🇷 Real Brasileño",
+      ARS: "🇦🇷 Peso Argentino",
+      COP: "🇨🇴 Peso Colombiano",
+      CLP: "🇨🇱 Peso Chileno",
+      PEN: "🇵🇪 Sol Peruano",
+    };
+
+    function llenarSelects() {
+      const origen = document.getElementById('moneda-origen');
+      const destino = document.getElementById('moneda-destino');
+      Object.entries(monedas).forEach(([code, name]) => {
+        origen.innerHTML += `<option value="${code}">${code} — ${name}</option>`;
+        destino.innerHTML += `<option value="${code}">${code} — ${name}</option>`;
+      });
+      origen.value = 'USD';
+      destino.value = 'MXN';
+    }
+
+    function intercambiar() {
+      const origen = document.getElementById('moneda-origen');
+      const destino = document.getElementById('moneda-destino');
+      const temp = origen.value;
+      origen.value = destino.value;
+      destino.value = temp;
+      ocultarResultados();
+    }
+
+    function setConversion(de, a) {
+      document.getElementById('moneda-origen').value = de;
+      document.getElementById('moneda-destino').value = a;
+      convertir();
+    }
+
+    function ocultarResultados() {
+      document.getElementById('resultado').classList.remove('visible');
+      document.getElementById('error').classList.remove('visible');
+    }
+
+    async function convertir() {
+      const cantidad = parseFloat(document.getElementById('cantidad').value);
+      const origen = document.getElementById('moneda-origen').value;
+      const destino = document.getElementById('moneda-destino').value;
+      const btn = document.getElementById('btn-convertir');
+
+      if (!cantidad || cantidad <= 0) {
+        mostrarError('Por favor ingresa una cantidad válida.');
+        return;
+      }
+
+      ocultarResultados();
+      btn.disabled = true;
+      btn.innerHTML = '<span class="cargando"></span> CONSULTANDO...';
+
+      try {
+        const res = await fetch(`https://open.er-api.com/v6/latest/${origen}`);
+        if (!res.ok) throw new Error('Error en la API');
+        const data = await res.json();
+        const tasa = data.rates[destino];
+        const resultado = (cantidad * tasa).toFixed(2);
+
+        document.getElementById('resultado-monto').textContent =
+          `${Number(resultado).toLocaleString('es-MX')} ${destino}`;
+        document.getElementById('resultado-detalle').textContent =
+          `${cantidad.toLocaleString('es-MX')} ${origen} = ${Number(resultado).toLocaleString('es-MX')} ${destino}`;
+        document.getElementById('tasa').textContent =
+          `Tasa: 1 ${origen} = ${tasa} ${destino}`;
+        document.getElementById('resultado').classList.add('visible');
+
+      } catch (e) {
+        mostrarError('No se pudo obtener el tipo de cambio. Verifica tu conexión a internet.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'CONVERTIR';
+      }
+    }
+
+    function mostrarError(msg) {
+      const err = document.getElementById('error');
+      err.textContent = msg;
+      err.classList.add('visible');
+    }
+
+    document.getElementById('cantidad').addEventListener('keydown', e => {
+      if (e.key === 'Enter') convertir();
+    });
+
+    llenarSelects();
+  </script>
+</body>
+</html>
